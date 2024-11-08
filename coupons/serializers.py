@@ -6,6 +6,8 @@ from hotelier_profiles.serializers import HotelierProfileSerializer
 
 # Serializar to expose API to create a coupon and their fields
 class CouponCreateSerializer(serializers.ModelSerializer):
+    media_url = serializers.ImageField(required=False)
+
     class Meta:
         model = Coupon
         fields = ['title', 'description', 'discount', 'media_url', 'quantity', 'expiration_date']

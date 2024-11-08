@@ -4,7 +4,7 @@ import uuid
 from core.models import TimeStampedModel
 
 def upload_to(instance, filename):
-    return f'coupons/{filename}'
+    return f'coupons/{filename}'.format(filename=filename)
 
 class Coupon(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

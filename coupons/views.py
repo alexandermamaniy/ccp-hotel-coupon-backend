@@ -3,6 +3,7 @@ from itertools import count
 from django.shortcuts import render
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from coupons.models import Coupon
@@ -51,11 +52,16 @@ class ListAllCouponsAPIView(ListAPIView):
 class CreateCouponUserAuthenticated(CreateAPIView):
     serializer_class = CouponCreateSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['hotelier'] = self.request.user
         return context
+
+    # def perform_create(self, serializer):
+    #     h = HotelierProfile.objects.get(user=self.request.user)
+    #     serializer.save(hotelier_profile=h )
 
     @extend_schema(
         request=CouponCreateSerializer,

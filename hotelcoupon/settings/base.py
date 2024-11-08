@@ -139,6 +139,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # use custom authentications
 AUTH_USER_MODEL = 'users.User'
 
+DEFAULT_FILE_STORAGE = "storages.backends.s3.S3Storage"
+# AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+AWS_SESSION_TOKEN = env('AWS_SESSION_TOKEN')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+AWS_QUERYSTRING_AUTH = env.bool('AWS_QUERYSTRING_AUTH', default=False)
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=365 * 1000),  # 1000 años
@@ -229,6 +236,7 @@ LOGGING = {
         },
     },
 }
+
 
 if ENVIRONMENT == 'production':
     LOGGING['handlers']['file']['level'] = 'ERROR'
