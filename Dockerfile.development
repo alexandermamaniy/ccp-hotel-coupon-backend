@@ -1,0 +1,30 @@
+FROM python:3.9
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y default-mysql-client build-essential
+
+# Create and set working directory
+RUN mkdir /hotelcoupon
+WORKDIR /hotelcoupon
+
+# Copy project files into the container
+COPY . /hotelcoupon/
+
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Specify the user to run the container
+RUN useradd -m hoteluser
+USER hoteluser
+
+ENV DJANGO_SETTINGS_MODULE hotelcoupon.settings.development
+ENV DJANGO_ENV development
+
+
+# Command to run the application
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
