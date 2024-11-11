@@ -1,23 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    container_name: db_hotel
-    image: mysql
-    restart: always
-    env_file: .env.development
-    networks:
-      - hotel_network_dev_net
-    volumes:
-      - db_hotel_data_development
-    healthcheck:
-      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
-      start_period: 5s
-      interval: 2s
-      timeout: 20s
-      retries: 10
-    ports:
-      - "3306:3306"
   web:
     build:
       context: "$PWD"
@@ -35,11 +18,6 @@ services:
       - /hotelcoupon/__pycache__/
     ports:
       - "8000:8000"
-    depends_on:
-      db:
-        condition: service_healthy
 networks:
   hotel_network_dev_net:
     name: hotel_network_dev_net
-volumes:
-  db_hotel_data_development:
