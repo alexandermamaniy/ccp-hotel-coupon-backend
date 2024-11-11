@@ -3,6 +3,7 @@ FROM python:3.9
 # Expose the port the app runs on
 EXPOSE 8000
 
+RUN echo "asd"
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1

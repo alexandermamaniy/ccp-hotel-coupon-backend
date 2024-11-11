@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.staging
     command: >
       sh -c "
-          python -m gunicorn --workers 3 --bind 0.0.0.0:8000 --timeout 120  billbuddy.wsgi:application"
+          python -m gunicorn --workers 3 --bind 0.0.0.0:8000 --timeout 120  hotelcoupon.wsgi:application"
     container_name: hotel-app-web-api
     networks:
       - network_main_net
@@ -16,7 +16,7 @@ services:
     volumes:
       - .:/hotelcoupon
       - /hotelcoupon/__pycache__/
-      - static_volume:/hotelcoupon/static:rw
+      - static_volume:/ccp-hotel-coupon-backend/static:rw
   webapp:
     build:
       context: "$PWD"
@@ -24,10 +24,10 @@ services:
     command: >
       sh -c "
           sleep 120"
-    container_name: hote-app-ui
+    container_name: hotel-app-ui
     restart: always
     volumes:
-      - static_volume:/hotelcoupon/static:rw
+      - static_app_build:/hotelcoupon/static:rw
     networks:
       - network_main_net
     depends_on:
@@ -35,17 +35,24 @@ services:
   nginx:
     image: nginx
     restart: always
+    command: >
+      sh -c "
+          cp -r /app_build/* /hotelcoupon/static/ && \
+          nginx -g 'daemon off;'"
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - static_volume:/hotelcoupon/static:rw
+      - static_app_build:/app_build:rw
     networks:
       - network_main_net
     ports:
       - "80:80"
     depends_on:
-      - webapp
+      - web
 networks:
   network_main_net:
     name: network_main_net
 volumes:
   static_volume:
+  static_app_build:
+
