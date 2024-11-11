@@ -12,23 +12,21 @@ RUN apt-get update && \
     apt-get install -y default-mysql-client build-essential
 
 # Create user runner
-RUN useradd -m billbuddyuser
+RUN useradd -m hoteluser
 
 USER root
 
+RUN git clone https://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@github.com/alexandermamaniyucra/ccp-hotel-coupon-backend.git
+
 # Create and set working directory
-RUN mkdir -p /billbuddy/static && \
-    mkdir -p /billbuddy/media
+RUN mkdir -p /ccp-hotel-coupon-backend/static
 
-WORKDIR /billbuddy
 
-# Copy project files into the container
-COPY . /billbuddy/
+WORKDIR /ccp-hotel-coupon-backend
 
 # Set woking directory permisions
-RUN chmod -R 775 /billbuddy/static
-RUN chmod -R 775 /billbuddy/media
-RUN chown -R billbuddyuser:billbuddyuser /billbuddy
+RUN chmod -R 775 /ccp-hotel-coupon-backend/static
+RUN chown -R hoteluser:hoteluser /ccp-hotel-coupon-backend
 
 
 # Install Python dependencies
@@ -36,14 +34,17 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 RUN pip install gunicorn psycopg2-binary
 
+
+
 # Specify the user to run the container
-USER billbuddyuser
+USER hoteluser
 
 # Set variable environment to run app
-ENV DJANGO_SETTINGS_MODULE billbuddy.settings.staging
+ENV DJANGO_SETTINGS_MODULE hotelcoupon.settings.staging
 ENV DJANGO_ENV staging
+
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-CMD python -m gunicorn --workers 3 --bind 0.0.0.0:8000 billbuddy.wsgi
+CMD python -m gunicorn --workers 3 --bind 0.0.0.0:8000 hotelcoupon.wsgi
