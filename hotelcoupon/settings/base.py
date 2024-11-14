@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'hotelier_profiles',
     'user_profiles',
     'coupons',
+    'reports',
     # Third-party apps
     'rest_framework',
     'corsheaders',

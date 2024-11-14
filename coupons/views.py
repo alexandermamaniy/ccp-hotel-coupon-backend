@@ -85,6 +85,8 @@ class RedeemCouponRetrieveAPIView(RetrieveAPIView):
             raise Exception("You have already redeemed this coupon")
 
         user_authenticated.coupons.add(coupon)
+        coupon.how_many_have_redeemed += 1
+        coupon.save()
         user_authenticated.save()
         return coupon
 
