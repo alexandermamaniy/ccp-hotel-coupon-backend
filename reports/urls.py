@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import GenerateReportPDFView
+from .views import GenerateReportPDFView, ListReportAPIView
 
 urlpatterns = [
-    path('generate-report-pdf/', GenerateReportPDFView.as_view(), name='generate-report-pdf'),
+    path('report/generate-pdf', GenerateReportPDFView.as_view(), name='generate-report-pdf'),
+    path('report/me', ListReportAPIView.as_view(), name='report-pdf-me'),
+
 ]

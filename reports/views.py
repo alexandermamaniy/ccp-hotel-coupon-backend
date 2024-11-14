@@ -1,3 +1,6 @@
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
+
 from coupons.models import Coupon
 from .aws_resources import SQSPoller
 from .models import Report
@@ -11,9 +14,25 @@ from .report_generator import generate_pdf
 from hotelier_profiles.models import HotelierProfile
 from functools import partial
 
-import json
 import boto3
 import json
+
+from .serializers import ReportSerializer
+
+
+class ListReportAPIView(ListAPIView):
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        hotelier_authenticated = HotelierProfile.objects.get(user=self.request.user)
+        reports = Report.objects.filter(hotelier_profile=hotelier_authenticated)
+        return reports
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
 
 
 def my_message_handler(message, buffer_data, hotelier_coupon_ids, from_date_report):
@@ -80,11 +99,15 @@ class GenerateReportPDFView(APIView):
         pdf_buffer = generate_pdf(processed_data, coupon_gral_information, from_date_report, current_day, hotelier_name)
 
 
-        # Create a new ReportTime instance
-        report_instance = Report(hotelier_profile=hotelier_authenticated)
-
         # Save the PDF to the report_url field, which will upload it to S3
         pdf_filename = f"{datetime.datetime.now().isoformat()}.pdf"
+
+        # Create a new ReportTime instance
+
+        report_name = current_day.isoformat() + "-" + hotelier_name + "-Report"
+
+        report_instance = Report(hotelier_profile=hotelier_authenticated, title=report_name)
+
         report_instance.media_url.save(pdf_filename, ContentFile(pdf_buffer.read()), save=True)
 
         # PUSH to SNS
