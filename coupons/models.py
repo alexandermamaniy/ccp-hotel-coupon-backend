@@ -1,10 +1,11 @@
-import enum
 from django.db import models
 import uuid
 from core.models import TimeStampedModel
 
+
 def upload_to(instance, filename):
     return f'coupons/{filename}'.format(filename=filename)
+
 
 class Coupon(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -14,6 +15,7 @@ class Coupon(TimeStampedModel):
     media_url = models.ImageField(upload_to=upload_to, blank=True, null=True)
     quantity = models.PositiveIntegerField('Quantity', default=0)
     how_many_have_redeemed = models.PositiveIntegerField('How many coupons have been redemeed', default=0)
+    how_many_have_used = models.PositiveIntegerField('How many coupons have been used', default=0)
     expiration_date = models.DateTimeField('Expiration date', blank=True, null=True)
     hotelier_profile = models.ForeignKey('hotelier_profiles.HotelierProfile', on_delete=models.CASCADE, verbose_name='Hotelier profile')
 

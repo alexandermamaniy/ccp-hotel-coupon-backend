@@ -29,10 +29,11 @@ def generate_pdf(processed_data, coupon_gral_information, from_date_report, curr
     for key, value in coupon_gral_information.items():
         coupon_title = "Coupon: "+value['title']
         discount = value['discount'] + "%"
-        p.drawString(x, y, (f"{coupon_title: <45}"
-                            f"Quantity: {value['quantity']: <8}"
-                            f"Discount: {discount: <8}"
-                            f"Redeemeds: {value['how_many_have_redeemed']: <8}"))
+        p.drawString(x, y, (f"{coupon_title: <40}"
+                            f"Quantity: {value['quantity']: <7}"
+                            f"Discount: {discount: <7}"
+                            f"Redeemeds: {value['how_many_have_redeemed']: <7}"
+                            f"Used: {value['how_many_have_used']: <7}"))
         y -= 20
 
     p.showPage()

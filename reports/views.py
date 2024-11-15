@@ -71,7 +71,7 @@ class GenerateReportPDFView(APIView):
 
 
         handler_with_params = partial(my_message_handler, buffer_data=buffer_data, hotelier_coupon_ids=hotelier_coupon_ids, from_date_report=from_date_report)
-        queue_poller.poll_messages(handler_with_params, target_message_count=10)
+        queue_poller.poll_messages(handler_with_params, target_message_count=30)
 
         processed_data = {}
         current_day = datetime.datetime.now().date()
@@ -82,6 +82,7 @@ class GenerateReportPDFView(APIView):
             coupon_gral_information[str(coupon.id)] = {}
             coupon_gral_information[str(coupon.id)]['title'] = str(coupon.title)
             coupon_gral_information[str(coupon.id)]['how_many_have_redeemed'] = str(coupon.how_many_have_redeemed)
+            coupon_gral_information[str(coupon.id)]['how_many_have_used'] = str(coupon.how_many_have_used)
             coupon_gral_information[str(coupon.id)]['quantity'] = str(coupon.quantity)
             coupon_gral_information[str(coupon.id)]['discount'] = str(coupon.discount)
 

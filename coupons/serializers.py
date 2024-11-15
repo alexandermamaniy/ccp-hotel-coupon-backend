@@ -23,4 +23,4 @@ class CouponSerializer(serializers.ModelSerializer):
     hotelier_profile = HotelierProfileSerializer()
     class Meta:
         model = Coupon
-        fields = ['id', 'title', 'description', 'discount', 'media_url', 'quantity', 'how_many_have_redeemed', 'expiration_date', 'hotelier_profile']
+        fields = ['id', 'title', 'description', 'discount', 'media_url', 'quantity', 'how_many_have_redeemed', 'how_many_have_used', 'expiration_date', 'hotelier_profile']

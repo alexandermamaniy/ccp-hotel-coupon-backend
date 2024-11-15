@@ -1,5 +1,6 @@
 from itertools import count
-
+import json
+import boto3
 from django.shortcuts import render
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView
@@ -9,17 +10,19 @@ from rest_framework.response import Response
 from coupons.models import Coupon
 from coupons.serializers import CouponSerializer, CouponCreateSerializer
 from hotelier_profiles.models import HotelierProfile
-from user_profiles.models import UserProfile
+from user_profiles.models import UserProfile, CouponUserProfile
+from user_profiles.serializers import CouponUserProfileSerializer
+
 
 class ListCouponsMeAPIView(ListAPIView):
     # serializer_class = BuddyProfileSerializer
 
-    serializer_class = CouponSerializer
+    serializer_class = CouponUserProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user_authenticated = UserProfile.objects.get(user=self.request.user)
-        coupons = Coupon.objects.filter(profiles=user_authenticated)
+        coupons = CouponUserProfile.objects.filter(user_profile_id=user_authenticated, is_used=False)
         return coupons
 
     def list(self, request, *args, **kwargs):
@@ -73,7 +76,7 @@ class CreateCouponUserAuthenticated(CreateAPIView):
 
 
 class RedeemCouponRetrieveAPIView(RetrieveAPIView):
-    serializer_class = CouponSerializer
+    serializer_class = CouponUserProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -88,7 +91,8 @@ class RedeemCouponRetrieveAPIView(RetrieveAPIView):
         coupon.how_many_have_redeemed += 1
         coupon.save()
         user_authenticated.save()
-        return coupon
+        coupon_with_code = CouponUserProfile.objects.get(user_profile_id=user_authenticated, coupon_id=coupon)
+        return coupon_with_code
 
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -102,3 +106,60 @@ class RedeemCouponRetrieveAPIView(RetrieveAPIView):
             return Response(serializer.data)
         except Exception as e:
             return Response(str(e), status=400)
+
+class UseCouponRetrieveAPIView(RetrieveAPIView):
+    serializer_class = CouponUserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        coupon_code_id = self.kwargs.get('pk')
+
+        coupon_with_code = CouponUserProfile.objects.get(id=coupon_code_id)
+        coupon = coupon_with_code.coupon_id
+
+        if coupon_with_code.is_used:
+            raise Exception("You have already used this coupon")
+
+        coupon_with_code.is_used = True
+        coupon_with_code.save()
+        coupon.how_many_have_used += 1
+        coupon.save()
+        return coupon_with_code
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_object()
+            serializer = self.get_serializer(queryset, context={'request': request})
+            user_profile_id = str(queryset.user_profile_id.id)
+            coupon_code = str(queryset.id)
+            message = {
+                "user_profile_id": str(user_profile_id),
+                "coupon_code": coupon_code}
+
+            client = boto3.client('sns', region_name='us-east-1')
+            response = client.publish(
+                TargetArn="arn:aws:sns:us-east-1:851725189998:usedCouponNotification",
+                Message=json.dumps(message),
+            )
+            print(response)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(str(e), status=400)
+
+class ListCouponsUsedAPIView(ListAPIView):
+    serializer_class = CouponUserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        hotelier_authenticated = HotelierProfile.objects.get(user=self.request.user)
+        coupons = Coupon.objects.filter(hotelier_profile=hotelier_authenticated)
+        list_coupon_used = []
+        for coupon in coupons:
+            coupons_used = CouponUserProfile.objects.filter(coupon_id=coupon, is_used=True)
+            list_coupon_used.extend(coupons_used)
+        return list_coupon_used
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, context={'request': request}, many=True)
+        return Response(serializer.data)
