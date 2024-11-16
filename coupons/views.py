@@ -9,9 +9,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from coupons.models import Coupon
 from coupons.serializers import CouponSerializer, CouponCreateSerializer
+# from hotelier_coupon_resources.aws_services import SNSService, SNSPublishMessageError
+from hotel_coupon_app_pkg_alexandermamani.aws_services import SNSService, SNSPublishMessageError
 from hotelier_profiles.models import HotelierProfile
 from user_profiles.models import UserProfile, CouponUserProfile
 from user_profiles.serializers import CouponUserProfileSerializer
+import environ
 
 
 class ListCouponsMeAPIView(ListAPIView):
@@ -136,12 +139,21 @@ class UseCouponRetrieveAPIView(RetrieveAPIView):
                 "user_profile_id": str(user_profile_id),
                 "coupon_code": coupon_code}
 
-            client = boto3.client('sns', region_name='us-east-1')
-            response = client.publish(
-                TargetArn="arn:aws:sns:us-east-1:851725189998:usedCouponNotification",
-                Message=json.dumps(message),
-            )
-            print(response)
+            env = environ.Env()
+
+            AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+            AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+            AWS_REGION = env('AWS_REGION')
+            AWS_SNS_USED_COUPON_NOTIFICATION_ARN = env('AWS_SNS_USED_COUPON_NOTIFICATION_ARN')
+
+            sns_service = SNSService(aws_access_key=AWS_ACCESS_KEY_ID,
+                                     aws_secret_key=AWS_SECRET_ACCESS_KEY,
+                                     region_name=AWS_REGION)
+            try:
+                sns_service.publish_message(AWS_SNS_USED_COUPON_NOTIFICATION_ARN, message,
+                                                               "Report Used Coupon Notification")
+            except SNSPublishMessageError as e:
+                print("SNS Error", e)
             return Response(serializer.data)
         except Exception as e:
             return Response(str(e), status=400)

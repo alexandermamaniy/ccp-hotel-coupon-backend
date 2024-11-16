@@ -2,7 +2,6 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from coupons.models import Coupon
-from .aws_resources import SQSPoller
 from .models import Report
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,12 +9,25 @@ from rest_framework import status
 from django.core.files.base import ContentFile
 import datetime
 
-from .report_generator import generate_pdf
+# from hotelier_coupon_resources.report_pdf import ReportPDF
+# from hotelier_coupon_resources.aws_services import SQSService, SNSService, SNSPublishMessageError, \
+# SQSPollingMessagesError, SQSClosingConnectionError
+
+#
+# from hotel_coupon_app_package_cpp_alexandermamani.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
+# from hotel_coupon_app_cpp_package_alexandermamani.report_pdf import ReportPDF
+# from hotelier_coupon_resources.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
+from hotel_coupon_app_pkg_alexandermamani.report_pdf import ReportPDF
+from hotel_coupon_app_pkg_alexandermamani.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
+
+
+
 from hotelier_profiles.models import HotelierProfile
 from functools import partial
-
-import boto3
 import json
+
+import environ
+
 
 from .serializers import ReportSerializer
 
@@ -35,13 +47,16 @@ class ListReportAPIView(ListAPIView):
         return Response(serializer.data)
 
 
-def my_message_handler(message, buffer_data, hotelier_coupon_ids, from_date_report):
-    # Process the message
-    print("Processing message:", message['Body'])
+def handler_to_get_data_for_a_specific_hotelier_id(message, buffer_data, hotelier_coupon_ids, from_date_report):
+    """
+    Return True if the user interaction data is part of their own hotelier coupons, False otherwise.
+
+    When True: Add the interaction user message to the buffer_data list and delete it from AWS SQS Queue.
+    When False: keep the interaction user message to AWS SQS Queue.
+    """
     message = json.loads(message['Body'])
     # Return True if processed successfully, False otherwise
 
-    print(str(message['date']))
     date_object = datetime.datetime.strptime(str(message['date']), '%d-%m-%Y').date()
 
     if from_date_report < date_object:
@@ -55,25 +70,37 @@ def my_message_handler(message, buffer_data, hotelier_coupon_ids, from_date_repo
 
 class GenerateReportPDFView(APIView):
     def get(self, request, *args, **kwargs):
-        # Generate PDF content
 
-
+        env = environ.Env()
 
         hotelier_authenticated = HotelierProfile.objects.get(user=self.request.user)
         hotelier_coupons = Coupon.objects.filter(hotelier_profile=hotelier_authenticated)
 
         hotelier_coupon_ids = [str(coupon.id) for coupon in hotelier_coupons]
 
-        buffer_data = []
-        queue_poller = SQSPoller()
+        buffer_processed_data = []
+
+        AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+        AWS_REGION = env('AWS_REGION')
+        AWS_SQS_QUEUE_URL = env('AWS_SQS_QUEUE_URL')
+
+        sqs_queue_instance = SQSService(aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                  aws_region=AWS_REGION,
+                                  aws_sqs_queue_url=AWS_SQS_QUEUE_URL)
 
         from_date_report = datetime.datetime.now().date()
 
+        handler_with_buffer = partial(handler_to_get_data_for_a_specific_hotelier_id, buffer_data=buffer_processed_data, hotelier_coupon_ids=hotelier_coupon_ids, from_date_report=from_date_report)
 
-        handler_with_params = partial(my_message_handler, buffer_data=buffer_data, hotelier_coupon_ids=hotelier_coupon_ids, from_date_report=from_date_report)
-        queue_poller.poll_messages(handler_with_params, target_message_count=30)
+        try:
+            sqs_queue_instance.poll_messages(handler_with_buffer, target_message_count=30)
+            sqs_queue_instance.close()
+        except (SQSPollingMessagesError, SQSClosingConnectionError) as e:
+            print("Error SQS", e)
 
-        processed_data = {}
+        user_interaction_data = {}
         current_day = datetime.datetime.now().date()
 
         coupon_gral_information = {}
@@ -87,18 +114,19 @@ class GenerateReportPDFView(APIView):
             coupon_gral_information[str(coupon.id)]['discount'] = str(coupon.discount)
 
 
-        for data in buffer_data:
-            if not data['coupon_id'] in processed_data:
-                processed_data[data['coupon_id']] = {}
-                processed_data[data['coupon_id']]['view'] = 0
-                processed_data[data['coupon_id']]['redeem'] = 0
+        for data in buffer_processed_data:
+            if not data['coupon_id'] in user_interaction_data:
+                user_interaction_data[data['coupon_id']] = {}
+                user_interaction_data[data['coupon_id']]['view'] = 0
+                user_interaction_data[data['coupon_id']]['redeem'] = 0
                 coupon_target = Coupon.objects.get(id=str(data['coupon_id']))
-                processed_data[data['coupon_id']]['coupon_title'] =  str(coupon_target.title)
+                user_interaction_data[data['coupon_id']]['coupon_title'] =  str(coupon_target.title)
 
-            processed_data[data['coupon_id']][data['action']] += 1
+            user_interaction_data[data['coupon_id']][data['action']] += 1
         hotelier_name = str(hotelier_authenticated.name)
-        pdf_buffer = generate_pdf(processed_data, coupon_gral_information, from_date_report, current_day, hotelier_name)
 
+        report = ReportPDF(user_interaction_data, coupon_gral_information, datetime.datetime.now().date(), "Dublin hotel")
+        pdf_buffer = report.generate()
 
         # Save the PDF to the report_url field, which will upload it to S3
         pdf_filename = f"{datetime.datetime.now().isoformat()}.pdf"
@@ -113,12 +141,13 @@ class GenerateReportPDFView(APIView):
 
         # PUSH to SNS
         message = {"hotelier_id": str(hotelier_authenticated.id)}
-        client = boto3.client('sns', region_name='us-east-1')
-        response = client.publish(
-            TargetArn="arn:aws:sns:us-east-1:851725189998:ReportNotification",
-            Message=json.dumps(message),
-        )
 
-        print(response)
+        AWS_SNS_REPORT_NOTIFICATION_ARN = env('AWS_SNS_REPORT_NOTIFICATION_ARN')
+
+        sns_service = SNSService(aws_access_key=AWS_ACCESS_KEY_ID, aws_secret_key=AWS_SECRET_ACCESS_KEY, region_name=AWS_REGION)
+        try:
+             sns_service.publish_message(AWS_SNS_REPORT_NOTIFICATION_ARN, message, "Report Notification")
+        except SNSPublishMessageError as e:
+            print("SNS Error", e)
 
         return Response({'pdf_url': report_instance.media_url.url}, status=status.HTTP_201_CREATED)
