@@ -34,8 +34,7 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 RUN pip install gunicorn psycopg2-binary
 
-RUN pip install -i https://test.pypi.org/simple/ pip install -r requirements_pypi_test.txt
-
+RUN pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani
 
 # Specify the user to run the container
 USER hoteluser
