@@ -15,7 +15,7 @@ COPY . /hotelcoupon/
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-RUN pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani==1.0.1
+RUN pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani==1.0.2
 # Expose the port the app runs on
 EXPOSE 8000
 
