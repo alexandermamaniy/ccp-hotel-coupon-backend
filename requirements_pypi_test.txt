@@ -1,0 +1,1 @@
+hotel_coupon_app_pkg_alexandermamani==1.0.1

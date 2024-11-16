@@ -35,7 +35,6 @@ RUN pip install --upgrade pip && \
 RUN pip install gunicorn psycopg2-binary
 
 
-
 # Specify the user to run the container
 USER hoteluser
 
