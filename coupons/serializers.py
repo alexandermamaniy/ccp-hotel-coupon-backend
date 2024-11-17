@@ -10,7 +10,7 @@ class CouponCreateSerializer(serializers.ModelSerializer):
     hotelier_profile = HotelierProfileSerializer(required=False)
     class Meta:
         model = Coupon
-        fields = ['title', 'description', 'discount', 'media_url', 'quantity', 'hotelier_profile', 'expiration_date']
+        fields = ['title', 'description', 'discount', 'media_url', 'quantity', 'how_many_have_redeemed', 'how_many_have_used', 'hotelier_profile', 'expiration_date']
 
     def create(self, validated_data):
         user = self.context.get('hotelier')
