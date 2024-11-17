@@ -16,7 +16,7 @@ RUN useradd -m hoteluser
 
 USER root
 
-RUN git clone https://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@github.com/alexandermamaniyucra/ccp-hotel-coupon-backend.git
+RUN git clone -b $STAGING_BRANCH_NAME https://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@github.com/alexandermamaniyucra/ccp-hotel-coupon-backend.git
 
 # Create and set working directory
 RUN mkdir -p /ccp-hotel-coupon-backend/static
