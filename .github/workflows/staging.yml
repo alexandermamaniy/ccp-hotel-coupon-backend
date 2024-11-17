@@ -25,11 +25,7 @@ jobs:
 
     - name: Get the branch name
       id: strip-branch-name-staging
-      run: |
-        staging_branch_name=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
-        echo "Building staging branch name $staging_branch_name"
-        echo "STAGING_BRANCH_NAME=$staging_branch_name" >> $GITHUB_ENV
-        shell: bash
+      run: staging_branch_name=$(echo "${{ github.ref }}" | sed 's|refs/heads/||') && echo "STAGING_BRANCH_NAME=$staging_branch_name" >> $GITHUB_ENV
 
     - name: Get the release version
       # i.e.: release/1.0.0 -> 1.0.0
