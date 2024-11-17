@@ -89,17 +89,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'hotelcoupon.wsgi.application'
 
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('MYSQL_DATABASE'),
-        'USER': env('MYSQL_USER'),
-        'PASSWORD': env('MYSQL_PASSWORD'),
-        'HOST': env('MYSQL_HOST', default='localhost'),
-        'PORT': env('MYSQL_PORT', default='3306'),
+if ENVIRONMENT != 'testing':
+    # Database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env('MYSQL_DATABASE'),
+            'USER': env('MYSQL_USER'),
+            'PASSWORD': env('MYSQL_PASSWORD'),
+            'HOST': env('MYSQL_HOST', default='localhost'),
+            'PORT': env('MYSQL_PORT', default='3306'),
+        }
     }
-}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
