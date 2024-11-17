@@ -33,9 +33,12 @@ jobs:
         echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
         shell: bash
 
+    # Docker Login
+    - name: Login to Docker hub
+      run: docker login -u x23329823 -p password23329823
+
     # Build the Docker image
     - name: Build the Docker image
-#      docker build -t hotelcoupon_web -f Dockerfile.staging . --no-cache
       run: docker build . --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION  --build-arg STAGING_BRANCH_NAME=staging_branch_name
 
     # Tag the Docker Images
