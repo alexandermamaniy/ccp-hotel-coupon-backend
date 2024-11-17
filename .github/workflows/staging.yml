@@ -38,7 +38,7 @@ jobs:
 
     # Build the Docker image
     - name: Build the Docker image
-      run: docker build . --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION  --build-arg STAGING_BRANCH_NAME=STAGING_BRANCH_NAME
+      run: docker build . --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION  --build-arg STAGING_BRANCH_NAME=$STAGING_BRANCH_NAME
 
     # Tag the Docker Images
     - name: Tag the image for the registry $DOCKER_REGISTRY_URL
