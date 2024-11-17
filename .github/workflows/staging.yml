@@ -53,7 +53,7 @@ jobs:
 
   build_docker_images:
     # Job name that shows in the GitHub UI
-    name: Build Docker Images
+    name: Build Hotelcoupon Docker Image and then publish it to docker hub registry
 
     needs: run_tests
     # Runner to use
