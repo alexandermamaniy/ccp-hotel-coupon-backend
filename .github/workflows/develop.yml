@@ -6,12 +6,17 @@ on:
       - develop
 
 concurrency:
-  group: develop
+  group: master
   cancel-in-progress: true
 
 jobs:
+  quality-assurance:
+    name: Quality Assurance
+    uses: ./.github/workflows/pr.yml
+
   deploy:
     name: Deploy
+    needs: quality-assurance
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
@@ -33,4 +38,4 @@ jobs:
           END
       - name: Run deploy
         run: |
-          ssh target "ls"
+          ssh target "cd Cooking-Core/ && docker-compose down && git pull && docker-compose build && docker-compose up -d --force-recreate"
