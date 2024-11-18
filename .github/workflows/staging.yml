@@ -109,6 +109,8 @@ jobs:
 #      run: docker rmi $DOCKER_IMAGE_NAME:$RELEASE_VERSION
 
   create-pull-request-to-pre-production:
+    # Job that run the unit tests
+    name: Pull request to Pre-Production branch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
