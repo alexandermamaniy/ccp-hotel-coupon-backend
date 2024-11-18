@@ -12,9 +12,9 @@ env:
   DOCKER_IMAGE_NAME: hotelcoupon_web
   DOCKER_REGISTRY_URL: x23329823
 
-#permissions:
-#  pull-requests: write
-#  contents: write
+permissions:
+  pull-requests: write
+  contents: write
 
 jobs:
 #  run_tests:
@@ -122,6 +122,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.TOKEN_GITHUB }}
           commit-message: New version
           title: Update STAGING
           body: New version
