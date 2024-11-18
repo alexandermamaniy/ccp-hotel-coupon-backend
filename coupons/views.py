@@ -15,6 +15,9 @@ from hotelier_profiles.models import HotelierProfile
 from user_profiles.models import UserProfile, CouponUserProfile
 from user_profiles.serializers import CouponUserProfileSerializer
 import environ
+from rest_framework import status
+
+import environ
 
 
 class ListCouponsMeAPIView(ListAPIView):
@@ -65,16 +68,45 @@ class CreateCouponUserAuthenticated(CreateAPIView):
         context['hotelier'] = self.request.user
         return context
 
-    # def perform_create(self, serializer):
-    #     h = HotelierProfile.objects.get(user=self.request.user)
-    #     serializer.save(hotelier_profile=h )
+    def create(self, request, *args, **kwargs):
+        env = environ.Env()
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+        AWS_REGION = env('AWS_REGION')
+        AWS_SNS_NEW_COUPON_NOTIFICATION_ARN = env('AWS_SNS_NEW_COUPON_NOTIFICATION_ARN')
+
+        hotelier_authenticated = HotelierProfile.objects.get(user=self.request.user)
+        coupon = serializer.validated_data
+
+        message = { "coupon_name": coupon['title'] ,
+                    "hotel_name": str(hotelier_authenticated.name),
+                    "hotelier_id":  str(hotelier_authenticated.id)}
+
+        sns_service = SNSService(aws_access_key=AWS_ACCESS_KEY_ID,
+                                 aws_secret_key=AWS_SECRET_ACCESS_KEY,
+                                 region_name=AWS_REGION)
+        try:
+            print(message)
+            print(AWS_SNS_NEW_COUPON_NOTIFICATION_ARN)
+            print(sns_service.publish_message(AWS_SNS_NEW_COUPON_NOTIFICATION_ARN, message,
+                                        "New Coupon released Notification"))
+        except SNSPublishMessageError as e:
+            print("SNS Error", e)
+
+        # Return the serialized data
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         request=CouponCreateSerializer,
         responses={201: CouponSerializer}
     )
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+        return self.create(request, *args, **kwargs)
 
 
 
