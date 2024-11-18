@@ -103,3 +103,18 @@ jobs:
 
     - name: Remove the local image
       run: docker rmi $DOCKER_IMAGE_NAME:$RELEASE_VERSION
+
+  create-pull-request-to-pre-production:
+    name: Create Pull Request to pre-production
+    needs: build_docker_images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "pre-production"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_label: "feature, automated pr"
+          pr_title: "[Example] Simple demo"
