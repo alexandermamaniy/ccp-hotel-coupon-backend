@@ -116,9 +116,5 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: pull-request
-        uses: repo-sync/pull-request@v2
-        with:
-          destination_branch: "pre-production"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_label: "feature, automated pr"
-          pr_title: "[Example] Simple demo"
+        run: |
+          hub pull-request -b pre-production -h staging/1.2.0 --no-edit -m "[Example] Simple demo" -l "feature, automated pr" 2> /tmp/pull-request.stderr.log || true
