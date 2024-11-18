@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from coupons.models import Coupon
 from coupons.serializers import CouponSerializer, CouponCreateSerializer
 # from hotelier_coupon_resources.aws_services import SNSService, SNSPublishMessageError
-from hotel_coupon_app_pkg_alexandermamani.aws_services import SNSService, SNSPublishMessageError
+from hotel_coupon_app_package_alexandermamani.aws_services import SNSService, SNSPublishMessageError
 from hotelier_profiles.models import HotelierProfile
 from user_profiles.models import UserProfile, CouponUserProfile
 from user_profiles.serializers import CouponUserProfileSerializer

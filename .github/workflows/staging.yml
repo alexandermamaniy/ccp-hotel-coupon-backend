@@ -28,10 +28,10 @@ jobs:
         uses: actions/checkout@v3
 
       - uses: actions/checkout@v4
-      - name: Set up Python 3.12
+      - name: Set up Python 3.9
         uses: actions/setup-python@v3
         with:
-          python-version: "3.12"
+          python-version: "3.9"
 
       - name: Get the branch name
         id: strip-branch-name-staging-to-clone-project
@@ -45,7 +45,7 @@ jobs:
           cd ccp-hotel-coupon-backend
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani==1.0.2
+          pip install -i https://test.pypi.org/simple/ hotel-coupon-app-package-alexandermamani==1.0.2
 
       - name: Configure the testing environment variables
         run: |

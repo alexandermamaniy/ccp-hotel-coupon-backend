@@ -9,16 +9,8 @@ from rest_framework import status
 from django.core.files.base import ContentFile
 import datetime
 
-# from hotelier_coupon_resources.report_pdf import ReportPDF
-# from hotelier_coupon_resources.aws_services import SQSService, SNSService, SNSPublishMessageError, \
-# SQSPollingMessagesError, SQSClosingConnectionError
-
-#
-# from hotel_coupon_app_package_cpp_alexandermamani.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
-# from hotel_coupon_app_cpp_package_alexandermamani.report_pdf import ReportPDF
-# from hotelier_coupon_resources.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
-from hotel_coupon_app_pkg_alexandermamani.report_pdf import ReportPDF
-from hotel_coupon_app_pkg_alexandermamani.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
+from hotel_coupon_app_package_alexandermamani.report_pdf import ReportPDF
+from hotel_coupon_app_package_alexandermamani.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
 
 
 
