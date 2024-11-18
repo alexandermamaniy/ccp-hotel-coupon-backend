@@ -32,4 +32,4 @@ jobs:
           END
       - name: Run deploy
         run: |
-          ssh target "cd ccp-hotel-coupon-deploy/ && docker-compose -f docker-compose.production.yml down && docker-compose -f docker-compose.production.yml up -d --force-recreate"
+          ssh target "cd ccp-hotel-coupon-deploy/ && docker-compose -f docker-compose.production.yml down && docker pull x23329823/hotelcoupon_web:latest && docker-compose -f docker-compose.production.yml up -d --force-recreate"
