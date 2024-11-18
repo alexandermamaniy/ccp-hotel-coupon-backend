@@ -12,9 +12,9 @@ env:
   DOCKER_IMAGE_NAME: hotelcoupon_web
   DOCKER_REGISTRY_URL: x23329823
 
-permissions:
-  pull-requests: write
-  contents: write
+#permissions:
+#  pull-requests: write
+#  contents: write
 
 jobs:
 #  run_tests:
@@ -109,12 +109,20 @@ jobs:
 #      run: docker rmi $DOCKER_IMAGE_NAME:$RELEASE_VERSION
 
   create-pull-request-to-pre-production:
-    name: Create Pull Request to pre-production
-#    needs: build_docker_images
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - name: pull-request
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update AUTHORS
         run: |
-          hub pull-request -b pre-production -h staging/1.2.0 --no-edit -m "[Example] Simple demo" -l "feature, automated pr" 2> /tmp/pull-request.stderr.log || true
+          git log --format='%aN <%aE>%n%cN <%cE>' | sort -u > AUTHORS
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: New version
+          title: Update STAGING
+          body: New version
+          branch: pre-production
