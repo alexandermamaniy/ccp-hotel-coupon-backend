@@ -12,9 +12,9 @@ env:
   DOCKER_IMAGE_NAME: hotelcoupon_web
   DOCKER_REGISTRY_URL: x23329823
 
-permissions:
-  pull-requests: write
-  contents: write
+#permissions:
+#  pull-requests: write
+#  contents: write
 
 jobs:
 #  run_tests:
