@@ -125,7 +125,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
-          commit-message: ${{ github.event.workflow_run.head_commit.message }}
+          commit-message: Automated request to ${{ github.event.workflow_run.head_commit.message }}
           title: Update $STAGING_BRANCH_NAME branch to Pre-Production
           body: $STAGING_BRANCH_NAME - ${{ github.event.workflow_run.head_commit.message }}
           branch: pre-production
