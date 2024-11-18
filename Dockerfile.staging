@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.9
 
 # Expose the port the app runs on
 EXPOSE 8000
@@ -35,7 +35,7 @@ RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 RUN pip install gunicorn psycopg2-binary
 
-RUN pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani==1.0.2
+RUN pip install -i https://test.pypi.org/simple/ hotel-coupon-app-package-alexandermamani==1.0.2
 
 # Specify the user to run the container
 USER hoteluser

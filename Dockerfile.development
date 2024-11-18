@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.9
 
 # Install system dependencies
 RUN apt-get update && \
@@ -15,7 +15,7 @@ COPY . /hotelcoupon/
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-RUN pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani==1.0.2
+RUN pip install -i https://test.pypi.org/simple/ hotel-coupon-app-package-alexandermamani==1.0.2
 # Expose the port the app runs on
 EXPOSE 8000
 

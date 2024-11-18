@@ -110,7 +110,7 @@ jobs:
 
   create-pull-request-to-pre-production:
     # Job that run the unit tests
-    name: Pull request to Pre-Production branch
+    name: Pull request to Main branch
     needs: build_docker_images
     runs-on: ubuntu-latest
     steps:

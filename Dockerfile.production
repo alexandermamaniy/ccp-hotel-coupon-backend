@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.9
 
 # Expose the port the app runs on
 EXPOSE 8000
