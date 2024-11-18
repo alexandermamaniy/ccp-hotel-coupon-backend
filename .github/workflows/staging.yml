@@ -7,115 +7,108 @@ on:
   push:
     branches:
       - 'staging/**'
-  pull_request_target:
-    types:
-      - opened
-      - edited
-      - synchronize
-
-permissions:
-  pull-requests: read
 
 env:
   DOCKER_IMAGE_NAME: hotelcoupon_web
   DOCKER_REGISTRY_URL: x23329823
 
 jobs:
-  run_tests:
-    # Job that run the unit tests
-    name: Run Tests
-    # Runner to use
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.12"
-
-      - name: Get the branch name
-        id: strip-branch-name-staging-to-clone-project
-        run: staging_branch_name=$(echo "${{ github.ref }}" | sed 's|refs/heads/||') && echo "Building staging branch name $staging_branch_name" && echo "STAGING_BRANCH_NAME=$staging_branch_name" >> $GITHUB_ENV
-
-      - name: Clone the last version of the $STAGING_BRANCH_NAME branch
-        run: git clone -b $STAGING_BRANCH_NAME https://${{ secrets.TOKEN_GITHUB }}@github.com/alexandermamaniyucra/ccp-hotel-coupon-backend.git
-
-      - name: Install dependencies
-        run: |
-          cd ccp-hotel-coupon-backend
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani==1.0.2
-
-      - name: Configure the testing environment variables
-        run: |
-          echo "DJANGO_SETTINGS_MODULE=hotelcoupon.settings.testing" >> $GITHUB_ENV
-          echo "DJANGO_ENV=testing" >> $GITHUB_ENV
-
-      - name: Execute the tests
-        run: python manage.py test users.tests
-
-  build_docker_images:
-    # Job name that shows in the GitHub UI
-    name: Build Hotelcoupon Docker Image and then publish it to docker hub registry
-
-    needs: run_tests
-    # Runner to use
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Get the branch name
-      id: strip-branch-name-staging
-      run: staging_branch_name=$(echo "${{ github.ref }}" | sed 's|refs/heads/||') && echo "Building staging branch name $staging_branch_name" && echo "STAGING_BRANCH_NAME=$staging_branch_name" >> $GITHUB_ENV
-
-    - name: Get the release version
-      # i.e.: release/1.0.0 -> 1.0.0
-      id: strip-branch-name
-      run: release_version=$(echo "${{ github.ref }}" | sed 's/refs\/heads\/.*\///') && echo "Building release version $release_version" && echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
-
-    # Docker Login
-    - name: Login to Docker hub
-      run: docker login -u x23329823 -p password23329823
-
-    # Build the Docker image
-    - name: Build the Docker image
-      run: docker build --build-arg STAGING_BRANCH_NAME=$STAGING_BRANCH_NAME --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION --no-cache .
-
-    # Tag the Docker Images
-    - name: Tag the image for the registry $DOCKER_REGISTRY_URL
-      run: docker tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:$RELEASE_VERSION
-
-    - name: Create a latest image as well
-      run: docker tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest
-
-    # Push the images to the registry
-    - name: Push the Docker image with version number
-      run: docker push $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:$RELEASE_VERSION
-
-    - name: Push the latest tag
-      run: docker push $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest
-
-    # Remove the local images
-    - name: Remove the Docker image with version number
-      run: docker rmi $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:$RELEASE_VERSION
-
-    - name: Remove the Docker image with latest tag
-      run: docker rmi $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest
-
-    - name: Remove the local image
-      run: docker rmi $DOCKER_IMAGE_NAME:$RELEASE_VERSION
+#  run_tests:
+#    # Job that run the unit tests
+#    name: Run Tests
+#    # Runner to use
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#
+#      - uses: actions/checkout@v4
+#      - name: Set up Python 3.12
+#        uses: actions/setup-python@v3
+#        with:
+#          python-version: "3.12"
+#
+#      - name: Get the branch name
+#        id: strip-branch-name-staging-to-clone-project
+#        run: staging_branch_name=$(echo "${{ github.ref }}" | sed 's|refs/heads/||') && echo "Building staging branch name $staging_branch_name" && echo "STAGING_BRANCH_NAME=$staging_branch_name" >> $GITHUB_ENV
+#
+#      - name: Clone the last version of the $STAGING_BRANCH_NAME branch
+#        run: git clone -b $STAGING_BRANCH_NAME https://${{ secrets.TOKEN_GITHUB }}@github.com/alexandermamaniyucra/ccp-hotel-coupon-backend.git
+#
+#      - name: Install dependencies
+#        run: |
+#          cd ccp-hotel-coupon-backend
+#          python -m pip install --upgrade pip
+#          pip install -r requirements.txt
+#          pip install -i https://test.pypi.org/simple/ hotel-coupon-app-pkg-alexandermamani==1.0.2
+#
+#      - name: Configure the testing environment variables
+#        run: |
+#          echo "DJANGO_SETTINGS_MODULE=hotelcoupon.settings.testing" >> $GITHUB_ENV
+#          echo "DJANGO_ENV=testing" >> $GITHUB_ENV
+#
+#      - name: Execute the tests
+#        run: python manage.py test users.tests
+#
+#  build_docker_images:
+#    # Job name that shows in the GitHub UI
+#    name: Build Hotelcoupon Docker Image and then publish it to docker hub registry
+#
+#    needs: run_tests
+#    # Runner to use
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - name: Checkout
+#      uses: actions/checkout@v3
+#
+#    - name: Get the branch name
+#      id: strip-branch-name-staging
+#      run: staging_branch_name=$(echo "${{ github.ref }}" | sed 's|refs/heads/||') && echo "Building staging branch name $staging_branch_name" && echo "STAGING_BRANCH_NAME=$staging_branch_name" >> $GITHUB_ENV
+#
+#    - name: Get the release version
+#      # i.e.: release/1.0.0 -> 1.0.0
+#      id: strip-branch-name
+#      run: release_version=$(echo "${{ github.ref }}" | sed 's/refs\/heads\/.*\///') && echo "Building release version $release_version" && echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+#
+#    # Docker Login
+#    - name: Login to Docker hub
+#      run: docker login -u x23329823 -p password23329823
+#
+#    # Build the Docker image
+#    - name: Build the Docker image
+#      run: docker build --build-arg STAGING_BRANCH_NAME=$STAGING_BRANCH_NAME --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION --no-cache .
+#
+#    # Tag the Docker Images
+#    - name: Tag the image for the registry $DOCKER_REGISTRY_URL
+#      run: docker tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:$RELEASE_VERSION
+#
+#    - name: Create a latest image as well
+#      run: docker tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest
+#
+#    # Push the images to the registry
+#    - name: Push the Docker image with version number
+#      run: docker push $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:$RELEASE_VERSION
+#
+#    - name: Push the latest tag
+#      run: docker push $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest
+#
+#    # Remove the local images
+#    - name: Remove the Docker image with version number
+#      run: docker rmi $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:$RELEASE_VERSION
+#
+#    - name: Remove the Docker image with latest tag
+#      run: docker rmi $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest
+#
+#    - name: Remove the local image
+#      run: docker rmi $DOCKER_IMAGE_NAME:$RELEASE_VERSION
 
   create-pull-request-to-pre-production:
     name: Create Pull Request to pre-production
-    needs: build_docker_images
+#    needs: build_docker_images
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
