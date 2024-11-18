@@ -2,10 +2,10 @@ name: Deploy of the hotel coupon app to AWS EC2
 on:
   push:
     branches:
-      - pre-production
+      - main
 
 concurrency:
-  group: pre-production
+  group: main
   cancel-in-progress: true
 
 jobs:
