@@ -12,6 +12,10 @@ env:
   DOCKER_IMAGE_NAME: hotelcoupon_web
   DOCKER_REGISTRY_URL: x23329823
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
 #  run_tests:
 #    # Job that run the unit tests
@@ -108,7 +112,6 @@ jobs:
     name: Create Pull Request to pre-production
 #    needs: build_docker_images
     runs-on: ubuntu-latest
-    permissions: write-all
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
