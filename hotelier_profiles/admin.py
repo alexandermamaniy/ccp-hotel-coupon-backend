@@ -9,6 +9,7 @@ admin.site.register(HotelierProfile)
 #     # filter_horizontal = ("group_members",)
 #     filter_horizontal = ('coupons',)
 
+
 #
 #
 # from django.contrib import admin

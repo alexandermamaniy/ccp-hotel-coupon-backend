@@ -127,6 +127,6 @@ jobs:
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
           commit-message: Automated request to ${{ github.event.workflow_run.head_commit.message }}
-          title: Update $STAGING_BRANCH_NAME branch to Pre-Production
+          title: Update $STAGING_BRANCH_NAME branch to main branch
           body: $STAGING_BRANCH_NAME - ${{ github.event.workflow_run.head_commit.message }}
           branch: main
