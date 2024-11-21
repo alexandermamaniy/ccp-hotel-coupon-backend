@@ -117,7 +117,7 @@ class GenerateReportPDFView(APIView):
             user_interaction_data[data['coupon_id']][data['action']] += 1
         hotelier_name = str(hotelier_authenticated.name)
 
-        report = ReportPDF(user_interaction_data, coupon_gral_information, datetime.datetime.now().date(), "Dublin hotel")
+        report = ReportPDF(user_interaction_data, coupon_gral_information, datetime.datetime.now().date(), hotelier_name)
         pdf_buffer = report.generate()
 
         # Save the PDF to the report_url field, which will upload it to S3
