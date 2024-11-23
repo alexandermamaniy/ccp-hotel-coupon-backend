@@ -45,7 +45,7 @@ jobs:
           cd ccp-hotel-coupon-backend
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -i https://test.pypi.org/simple/ hotel-coupon-app-package-alexandermamani==1.0.2
+          pip install -i https://test.pypi.org/simple/ hotel-coupon-app-package-alexandermamani
 
       - name: Configure the testing environment variables
         run: |
