@@ -37,7 +37,7 @@ docker-compose -f docker-compose.development.yml up
 ### Run migrations and server dev
 You can run generate the migrations and apply them and also create a superuser in order to crowded
 ```
-docker-compose -f docker-compose.development.yml exec web python manage.py makemigrations users hotelier_profiles user_profiles coupons
+docker-compose -f docker-compose.development.yml exec web python manage.py makemigrations users hotelier_profiles user_profiles coupons reports
 docker-compose -f docker-compose.development.yml exec web python manage.py migrate
 docker-compose -f docker-compose.development.yml exec web python manage.py runserver
 ```

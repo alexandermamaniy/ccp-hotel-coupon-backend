@@ -115,8 +115,8 @@ class GenerateReportPDFView(APIView):
                 user_interaction_data[data['coupon_id']]['coupon_title'] =  str(coupon_target.title)
 
             user_interaction_data[data['coupon_id']][data['action']] += 1
-        hotelier_name = str(hotelier_authenticated.name)
 
+        hotelier_name = str(hotelier_authenticated.name)
         report = ReportPDF(user_interaction_data, coupon_gral_information, datetime.datetime.now().date(), hotelier_name)
         pdf_buffer = report.generate()
 
@@ -124,11 +124,8 @@ class GenerateReportPDFView(APIView):
         pdf_filename = f"{datetime.datetime.now().isoformat()}.pdf"
 
         # Create a new ReportTime instance
-
         report_name = current_day.isoformat() + "-" + hotelier_name + "-Report"
-
         report_instance = Report(hotelier_profile=hotelier_authenticated, title=report_name)
-
         report_instance.media_url.save(pdf_filename, ContentFile(pdf_buffer.read()), save=True)
 
         # PUSH to SNS
