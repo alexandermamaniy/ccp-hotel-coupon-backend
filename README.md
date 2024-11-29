@@ -31,7 +31,7 @@ AWS_QUERYSTRING_AUTH=False
 ```shell
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-pip install -i https://test.pypi.org/simple/ hotel-coupon-app-package-alexandermamani
+pip install hotel-coupon-app-package-alexandermamani
 ```
 
 ### Export the environment variables for development
