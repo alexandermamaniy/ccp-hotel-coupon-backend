@@ -1,7 +1,3 @@
-from itertools import count
-import json
-import boto3
-from django.shortcuts import render
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -9,12 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from coupons.models import Coupon
 from coupons.serializers import CouponSerializer, CouponCreateSerializer
-# from hotelier_coupon_resources.aws_services import SNSService, SNSPublishMessageError
 from hotel_coupon_app_package_alexandermamani.aws_services import SNSService, SNSPublishMessageError
 from hotelier_profiles.models import HotelierProfile
 from user_profiles.models import UserProfile, CouponUserProfile
 from user_profiles.serializers import CouponUserProfileSerializer
-import environ
 from rest_framework import status
 
 import environ
