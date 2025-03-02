@@ -10,7 +10,9 @@ from hotelier_profiles.models import HotelierProfile
 from user_profiles.models import UserProfile, CouponUserProfile
 from user_profiles.serializers import CouponUserProfileSerializer
 from rest_framework import status
-
+from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 import environ
 
 
@@ -48,7 +50,9 @@ class ListCouponsHotelierAPIView(ListAPIView):
 class ListAllCouponsAPIView(ListAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponSerializer
-    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['hotelier_profile__name', 'hotelier_profile__country']
+    search_fields = ['title', 'description', 'hotelier_profile__name', 'hotelier_profile__address', 'hotelier_profile__country']
 
 
 
