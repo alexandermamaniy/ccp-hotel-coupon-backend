@@ -1,3 +1,6 @@
+from wsgiref.util import FileWrapper
+
+from django.http import HttpResponse
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
@@ -8,20 +11,35 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.core.files.base import ContentFile
 import datetime
-
-from hotel_coupon_app_package_alexandermamani.report_pdf import ReportPDF
+from hotel_coupon_app_package_alexandermamani.report_pdf import ReportPDF, ReportCustomPDF
 from hotel_coupon_app_package_alexandermamani.aws_services import SQSService, SNSService, SNSPublishMessageError, SQSPollingMessagesError, SQSClosingConnectionError
-
-
-
 from hotelier_profiles.models import HotelierProfile
 from functools import partial
 import json
-
 import environ
+from .serializers import ReportSerializer, CustomReportSerializer
 
 
-from .serializers import ReportSerializer
+class GenerateReportPDFCustomView(APIView):
+    def post(self, request, *args, **kwargs):
+        # request.data
+        # print(request.data)
+        # data = {}
+        # data['report_title'] = "Report Name"
+        # data['report_description'] = "This is an example of a report description"
+        # data['report_table_data_header'] = {"column1": "Order id", "column2": "Product name", "column3": "Quantity",
+        #                                     "column4": "Price"}
+        # data['report_table_data_body'] = [
+        #     {"column1": "12j-jk12-12", "column2": "Car 1", "column3": "12", "column4": "13.45"},
+        #     {"column1": "12j-jk12-33", "column2": "Car 1", "column3": "12", "column4": "13.45"}
+        # ]
+
+        serializer = CustomReportSerializer(data=request.data)
+        if serializer.is_valid():
+            report = ReportCustomPDF(request.data)
+            pdf_buffer = report.generate()
+            return HttpResponse(FileWrapper(pdf_buffer), content_type='application/pdf', status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ListReportAPIView(ListAPIView):
