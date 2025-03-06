@@ -1,6 +1,7 @@
 from wsgiref.util import FileWrapper
 
 from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
@@ -19,7 +20,15 @@ import json
 import environ
 from .serializers import ReportSerializer, CustomReportSerializer
 
-
+@extend_schema(
+        request=CustomReportSerializer,
+        responses={
+            200: {
+                "content": {"application/pdf": {}},
+                "description": "Return the PDF file",
+            },
+        }
+    )
 class GenerateReportPDFCustomView(APIView):
     def post(self, request, *args, **kwargs):
         # request.data
