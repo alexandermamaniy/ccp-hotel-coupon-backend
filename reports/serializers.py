@@ -26,6 +26,11 @@ class ReportTableBodySerializer(serializers.Serializer):
 
 class CustomReportSerializer(serializers.Serializer):
     report_title = serializers.CharField()
+    order_id = serializers.CharField()
+    name = serializers.CharField()
+    email = serializers.CharField()
+    shipping_address = serializers.CharField()
+    total = serializers.CharField()
     report_description = serializers.CharField()
     report_table_data_header = ReportTableHeaderSerializer()
     report_table_data_body = ReportTableBodySerializer(many=True)
