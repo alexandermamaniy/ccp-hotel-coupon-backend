@@ -49,6 +49,7 @@ class ListCouponsHotelierAPIView(ListAPIView):
 
 class ListAllCouponsAPIView(ListAPIView):
     queryset = Coupon.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = CouponSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['hotelier_profile__name', 'hotelier_profile__country']

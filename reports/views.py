@@ -20,6 +20,50 @@ import json
 import environ
 from .serializers import ReportSerializer, CustomReportSerializer
 
+
+import tempfile
+from rest_framework.parsers import MultiPartParser
+from django.http import FileResponse
+
+
+from pdf2docx import parse
+
+
+class PdfToWordView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        uploaded_file = request.FILES.get('file')
+
+        if not uploaded_file:
+            return Response({"error": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Save uploaded PDF to a temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+                temp_pdf.write(uploaded_file.read())
+                pdf_path = temp_pdf.name
+
+            # Prepare output DOCX file path
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_docx:
+                docx_path = temp_docx.name
+
+            # Convert using parse()
+            parse(pdf_path, docx_path)
+
+            # Clean up PDF file
+            os.remove(pdf_path)
+
+            # Return DOCX file
+            return FileResponse(
+                open(docx_path, 'rb'),
+                as_attachment=True,
+                filename='converted.docx'
+            )
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @extend_schema(
         request=CustomReportSerializer,
         responses={
