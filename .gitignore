@@ -5,6 +5,7 @@ venvs/
 # database
 db.sqlite3
 
+.env.*
 
 # schemas
 schema.yml
