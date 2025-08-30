@@ -5,7 +5,7 @@ venvs/
 # database
 db.sqlite3
 
-.env.*
+hotelcoupon/.env.*
 
 # schemas
 schema.yml
