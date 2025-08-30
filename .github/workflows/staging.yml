@@ -10,7 +10,7 @@ on:
 
 env:
   DOCKER_IMAGE_NAME: hotelcoupon_web
-  DOCKER_REGISTRY_URL: x23329823
+  DOCKER_REGISTRY_URL: akey96
 
 #permissions:
 #  pull-requests: write
@@ -108,25 +108,28 @@ jobs:
     - name: Remove the local image
       run: docker rmi $DOCKER_IMAGE_NAME:$RELEASE_VERSION
 
-  create-pull-request-to-pre-production:
-    # Job that run the unit tests
-    name: Pull request to Main branch
+  deploy:
+    name: Deploy Backend container to AWS EC2
     needs: build_docker_images
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Update AUTHORS
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          git log --format='%aN <%aE>%n%cN <%cE>' | sort -u > AUTHORS
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          commit-message: Automated request to ${{ github.event.workflow_run.head_commit.message }}
-          title: Update $STAGING_BRANCH_NAME branch to main branch
-          body: $STAGING_BRANCH_NAME - ${{ github.event.workflow_run.head_commit.message }}
-          branch: main
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
+          chmod 600 ~/.ssh/github
+          cat >>~/.ssh/config <<END
+          Host target
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/github
+            LogLevel ERROR
+            StrictHostKeyChecking no
+          END
+      - name: Run deploy
+        run: |
+          ssh target "cd ccp-hotel-coupon-deploy/ && docker compose -f docker-compose.staging.yml down && docker pull $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest && docker compose -f docker-compose.staging.yml up -d --force-recreate"
