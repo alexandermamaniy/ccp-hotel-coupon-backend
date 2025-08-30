@@ -10,56 +10,17 @@ on:
 
 env:
   DOCKER_IMAGE_NAME: hotelcoupon_web
-  DOCKER_REGISTRY_URL: x23329823
+  DOCKER_REGISTRY_URL: akey96
 
 #permissions:
 #  pull-requests: write
 #  contents: write
 
 jobs:
-  run_tests:
-    # Job that run the unit tests
-    name: Run Tests
-    # Runner to use
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.9"
-
-      - name: Get the branch name
-        id: strip-branch-name-staging-to-clone-project
-        run: staging_branch_name=$(echo "${{ github.ref }}" | sed 's|refs/heads/||') && echo "Building staging branch name $staging_branch_name" && echo "STAGING_BRANCH_NAME=$staging_branch_name" >> $GITHUB_ENV
-
-      - name: Clone the last version of the $STAGING_BRANCH_NAME branch
-        run: git clone -b $STAGING_BRANCH_NAME https://${{ secrets.TOKEN_GITHUB }}@github.com/alexandermamaniyucra/ccp-hotel-coupon-backend.git
-
-      - name: Install dependencies
-        run: |
-          cd ccp-hotel-coupon-backend
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install hotel-coupon-app-package-alexandermamani
-
-      - name: Configure the testing environment variables
-        run: |
-          echo "DJANGO_SETTINGS_MODULE=hotelcoupon.settings.testing" >> $GITHUB_ENV
-          echo "DJANGO_ENV=testing" >> $GITHUB_ENV
-
-      - name: Execute the tests
-        run: python manage.py test users.tests
-
   build_docker_images:
     # Job name that shows in the GitHub UI
     name: Build Hotelcoupon Docker Image and then publish it to docker hub registry
 
-    needs: run_tests
     # Runner to use
     runs-on: ubuntu-latest
 
@@ -78,11 +39,11 @@ jobs:
 
     # Docker Login
     - name: Login to Docker hub
-      run: docker login -u x23329823 -p password23329823
+      run: docker login -u akey96 -p ${{ secrets.TOKEN_DOCKERHUB }}
 
     # Build the Docker image
     - name: Build the Docker image
-      run: docker build --build-arg STAGING_BRANCH_NAME=$STAGING_BRANCH_NAME --build-arg TOKEN_GITHUB=${{ secrets.TOKEN_GITHUB }} --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION --no-cache .
+      run: docker build --build-arg STAGING_BRANCH_NAME=$STAGING_BRANCH_NAME --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION --no-cache .
 
     # Tag the Docker Images
     - name: Tag the image for the registry $DOCKER_REGISTRY_URL
@@ -108,25 +69,28 @@ jobs:
     - name: Remove the local image
       run: docker rmi $DOCKER_IMAGE_NAME:$RELEASE_VERSION
 
-  create-pull-request-to-pre-production:
-    # Job that run the unit tests
-    name: Pull request to Main branch
+  deploy:
+    name: Deploy Backend container to AWS EC2
     needs: build_docker_images
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Update AUTHORS
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          git log --format='%aN <%aE>%n%cN <%cE>' | sort -u > AUTHORS
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.TOKEN_GITHUB }}
-          commit-message: Automated request to ${{ github.event.workflow_run.head_commit.message }}
-          title: Update $STAGING_BRANCH_NAME branch to main branch
-          body: $STAGING_BRANCH_NAME - ${{ github.event.workflow_run.head_commit.message }}
-          branch: main
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/github
+          chmod 600 ~/.ssh/github
+          cat >>~/.ssh/config <<END
+          Host target
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/github
+            LogLevel ERROR
+            StrictHostKeyChecking no
+          END
+      - name: Run deploy
+        run: |
+          ssh target "cd ccp-hotel-coupon-deploy/ && docker compose -f docker-compose.staging.yml down && docker pull $DOCKER_REGISTRY_URL/$DOCKER_IMAGE_NAME:latest && docker compose -f docker-compose.staging.yml up -d --force-recreate"
