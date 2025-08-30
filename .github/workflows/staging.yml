@@ -39,11 +39,11 @@ jobs:
 
     # Docker Login
     - name: Login to Docker hub
-      run: docker login -u x23329823 -p password23329823
+      run: docker login -u akey96 -p ${{ secrets.TOKEN_DOCKERHUB }}
 
     # Build the Docker image
     - name: Build the Docker image
-      run: docker build --build-arg STAGING_BRANCH_NAME=$STAGING_BRANCH_NAME --build-arg TOKEN_GITHUB=${{ secrets.TOKEN_GITHUB }} --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION --no-cache .
+      run: docker build --build-arg STAGING_BRANCH_NAME=$STAGING_BRANCH_NAME --file Dockerfile.staging --tag $DOCKER_IMAGE_NAME:$RELEASE_VERSION --no-cache .
 
     # Tag the Docker Images
     - name: Tag the image for the registry $DOCKER_REGISTRY_URL
